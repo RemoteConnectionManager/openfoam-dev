@@ -164,18 +164,9 @@ Type Foam::LduMatrix<Type, DType, LUType>::solver::normFactor
     Field<Type>& tmpField
 ) const
 {
-    // --- Calculate A dot reference value of psi
-    matrix_.sumA(tmpField);
-    cmptMultiply(tmpField, tmpField, gAverage(psi));
-
-    return stabilise
-    (
-        gSum(cmptMag(Apsi - tmpField) + cmptMag(matrix_.source() - tmpField)),
-        SolverPerformance<Type>::small_
-    );
-
-    // At convergence this simpler method is equivalent to the above
-    // return stabilise(2*gSumCmptMag(matrix_.source()), matrix_.small_);
+    // --- Calculate the l2 norm of the true b - Ax residual.
+    // Equivalent to the PETSc KSP_NORM_UNPRECONDITIONED
+    return Foam::sqrt(gSum((matrix_.source() - Apsi) * (matrix_.source() - Apsi)));
 }
 
 
